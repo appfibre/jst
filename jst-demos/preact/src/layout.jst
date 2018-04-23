@@ -1,0 +1,13 @@
+[ "div"	, { key: 0, style: {border: "1px solid orange"}} 
+		, [   [ "div", {key: 1}, "outer 123"]
+			, [ './Test/Single.jsx', { key: 2, style: {background: "yellow"}, onClick: './functs.js##clickevent()' }, JSON.stringify("ABC") ]
+			, [ './Test/Single.jsx', { key: 3,style: {background: "blue"}, onClick: () => new './functs.js'(self).clickevent()}, JSON.stringify("ABC") ]
+			, [ './Test/Multiple.jsx#A', {key: 4}, [ "div", null, "test button" ] ]
+			, [ './Test/Multiple.jsx#B', {key: 5}, "GHI" ]
+			, [ './header.jst', { key: 6, bgcolor: "green" }, [ "layout" ] ]
+			, [ "div",  {key: 7, style:{"background":"red"}}, 	[ [ "div", {key: 1}, "line 1" ]
+																, [ "div", {key: 2}, "line 2" ]
+																]
+				]
+			]
+]
