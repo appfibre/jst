@@ -1,29 +1,59 @@
 {
-  "name": "jst-react",
-  "version": "1.0.3",
-  "description": "JST with React templating",
-  "main": "loader.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "_from": "@appfibre/jst-react",
+  "_id": "@appfibre/jst-react@0.1.0",
+  "_inBundle": false,
+  "_integrity": "sha512-d9m/GLEyPxRyaN+WOV5y0NXPR3ItiEkzsKTgIXp5SjflMdVHU9sq/vLDnSkcTYMu9ejH8mUJXb64ak82xT6GxA==",
+  "_location": "/@appfibre/jst-react",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "tag",
+    "registry": true,
+    "raw": "@appfibre/jst-react",
+    "name": "@appfibre/jst-react",
+    "escapedName": "@appfibre%2fjst-react",
+    "scope": "@appfibre",
+    "rawSpec": "",
+    "saveSpec": null,
+    "fetchSpec": "latest"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/appfibre/jst.git"
-  },
-  "keywords": [
-    "JST",
-    "React"
+  "_requiredBy": [
+    "#USER",
+    "/"
   ],
-  "author": "Dawid Rautenbach <dawid@rautenbach.za.net>",
-  "license": "MIT",
+  "_resolved": "https://registry.npmjs.org/@appfibre/jst-react/-/jst-react-0.1.0.tgz",
+  "_shasum": "c39711a2710288a6c48d4a1ed129100b487b2062",
+  "_spec": "@appfibre/jst-react",
+  "_where": "C:\\Code\\appfibre\\jst\\node\\multientry",
+  "author": {
+    "name": "Dawid Rautenbach",
+    "email": "dawid@rautenbach.za.net"
+  },
   "bugs": {
     "url": "https://github.com/appfibre/jst/issues"
   },
-  "homepage": "https://github.com/appfibre/jst#readme",
+  "bundleDependencies": false,
   "dependencies": {
     "jst-syntax": "^1.0.6",
     "react": "^16.3.2",
     "react-dom": "^16.3.2"
   },
-  "devDependencies": {}
+  "deprecated": false,
+  "description": "JST to React converstion",
+  "devDependencies": {},
+  "homepage": "https://github.com/appfibre/jst#readme",
+  "keywords": [
+    "JST",
+    "React"
+  ],
+  "license": "MIT",
+  "main": "index.js",
+  "name": "@appfibre/jst-react",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/appfibre/jst.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "version": "0.1.0"
 }

@@ -1,0 +1,58 @@
+{
+  "_from": "@appfibre/jst",
+  "_id": "@appfibre/jst@0.1.0",
+  "_inBundle": false,
+  "_integrity": "sha512-Xp3BYO2CkZ5iilCrvotPtYKlOobXsbLok5Q16wTeitN8LSZ4uZ4hz4mex86hkj0q+T04LCYB5SAE/yqu7CdLmg==",
+  "_location": "/@appfibre/jst",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "tag",
+    "registry": true,
+    "raw": "@appfibre/jst",
+    "name": "@appfibre/jst",
+    "escapedName": "@appfibre%2fjst",
+    "scope": "@appfibre",
+    "rawSpec": "",
+    "saveSpec": null,
+    "fetchSpec": "latest"
+  },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/@appfibre/jst/-/jst-0.1.0.tgz",
+  "_shasum": "b34416ece36fc60fdaf862776000ae557c8735bb",
+  "_spec": "@appfibre/jst",
+  "_where": "C:\\Code\\appfibre\\jst\\node\\tests",
+  "author": {
+    "name": "Dawid Rautenbach",
+    "email": "dawid@rautenbach.za.net"
+  },
+  "bugs": {
+    "url": "https://github.com/appfibre/jst/issues"
+  },
+  "bundleDependencies": false,
+  "dependencies": {
+    "babel-loader": "^7.1.4"
+  },
+  "deprecated": false,
+  "description": "JST loader",
+  "devDependencies": {
+    "@babel/core": "^7.1.2"
+  },
+  "homepage": "https://github.com/appfibre/jst#readme",
+  "keywords": [
+    "JST"
+  ],
+  "license": "MIT",
+  "main": "loader.js",
+  "name": "@appfibre/jst",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/appfibre/jst.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "version": "0.1.0"
+}

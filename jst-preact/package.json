@@ -1,28 +1,58 @@
 {
-  "name": "jst-preact",
-  "version": "1.0.4",
+  "_from": "@appfibre/jst-preact",
+  "_id": "@appfibre/jst-preact@1.0.5",
+  "_inBundle": false,
+  "_integrity": "sha512-B8TLe/W+ViixqUVdfV0YXkzOAA7FQRMOZ1p+vCicPzOSBiYJqTEVQH2WiKztSI16lBNVdLkKZkbOJYguoN3seQ==",
+  "_location": "/@appfibre/jst-preact",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "tag",
+    "registry": true,
+    "raw": "@appfibre/jst-preact",
+    "name": "@appfibre/jst-preact",
+    "escapedName": "@appfibre%2fjst-preact",
+    "scope": "@appfibre",
+    "rawSpec": "",
+    "saveSpec": null,
+    "fetchSpec": "latest"
+  },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/@appfibre/jst-preact/-/jst-preact-1.0.5.tgz",
+  "_shasum": "0e7defa34f78423796b998fbf6dae4d1c9928c4c",
+  "_spec": "@appfibre/jst-preact",
+  "_where": "C:\\Code\\appfibre\\jst\\node\\multientry",
+  "author": {
+    "name": "Dawid Rautenbach",
+    "email": "dawid@rautenbach.za.net"
+  },
+  "bugs": {
+    "url": "https://github.com/appfibre/jst/issues"
+  },
+  "bundleDependencies": false,
+  "dependencies": {
+    "@appfibre/jst": "^0.1.0",
+    "preact": "^8.2.7"
+  },
+  "deprecated": false,
   "description": "JST with Preact templating",
-  "main": "loader.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/appfibre/jst.git"
-  },
+  "devDependencies": {},
+  "homepage": "https://github.com/appfibre/jst#readme",
   "keywords": [
     "JST",
     "Preact"
   ],
-  "author": "Dawid Rautenbach <dawid@rautenbach.za.net>",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/appfibre/jst/issues"
+  "main": "loader.js",
+  "name": "@appfibre/jst-preact",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/appfibre/jst.git"
   },
-  "homepage": "https://github.com/appfibre/jst#readme",
-  "dependencies": {
-    "jst-syntax": "^1.0.6",
-    "preact": "^8.2.7"
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "devDependencies": {}
+  "version": "1.0.5"
 }
