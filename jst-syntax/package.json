@@ -1,16 +1,16 @@
 {
-  "_from": "@appfibre/jst",
-  "_id": "@appfibre/jst@0.1.0",
+  "_from": "@appfibre/jst-syntax",
+  "_id": "@appfibre/jst-syntax@0.1.0",
   "_inBundle": false,
   "_integrity": "sha512-Xp3BYO2CkZ5iilCrvotPtYKlOobXsbLok5Q16wTeitN8LSZ4uZ4hz4mex86hkj0q+T04LCYB5SAE/yqu7CdLmg==",
-  "_location": "/@appfibre/jst",
+  "_location": "/@appfibre/jst-syntax",
   "_phantomChildren": {},
   "_requested": {
     "type": "tag",
     "registry": true,
-    "raw": "@appfibre/jst",
-    "name": "@appfibre/jst",
-    "escapedName": "@appfibre%2fjst",
+    "raw": "@appfibre/jst-syntax",
+    "name": "@appfibre/jst-syntax",
+    "escapedName": "@appfibre%2fjst-syntax",
     "scope": "@appfibre",
     "rawSpec": "",
     "saveSpec": null,
@@ -22,24 +22,26 @@
   ],
   "_resolved": "https://registry.npmjs.org/@appfibre/jst/-/jst-0.1.0.tgz",
   "_shasum": "b34416ece36fc60fdaf862776000ae557c8735bb",
-  "_spec": "@appfibre/jst",
-  "_where": "C:\\Code\\appfibre\\jst\\node\\tests",
+  "_spec": "@appfibre/jst-syntax",
+  "_where": "C:\\Code\\appfibre\\jst-syntax\\node\\tests",
   "author": {
     "name": "Dawid Rautenbach",
     "email": "dawid@rautenbach.za.net"
   },
   "bugs": {
-    "url": "https://github.com/appfibre/jst/issues"
+    "url": "https://github.com/appfibre/jst-syntax/issues"
   },
   "bundleDependencies": false,
   "dependencies": {
+    "babel-loader": "^7.1.4",
+    "jst": "^1.0"
   },
   "deprecated": false,
   "description": "JST loader",
   "devDependencies": {
     "@babel/core": "^7.1.2"
   },
-  "homepage": "https://github.com/appfibre/jst#readme",
+  "homepage": "https://github.com/appfibre/jst-syntax#readme",
   "keywords": [
     "JST"
   ],
@@ -48,7 +50,7 @@
   "name": "@appfibre/jst",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/appfibre/jst.git"
+    "url": "git+https://github.com/appfibre/jst-syntax.git"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

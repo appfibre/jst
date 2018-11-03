@@ -1,4 +1,4 @@
-export default function ( {Component} ) {
+export default function inject ( {Component} ) {
 
     return class Intercept extends Component {
     constructor() 
@@ -39,7 +39,7 @@ export default function ( {Component} ) {
 
     render() {
         //return super.render(Array.isArray(this.props.children) ? this.reconstruct(["div", {style: {display: "inline-block"}}, this.props.children])  : this.reconstruct(this.props.children));
-        return super.render(this.reconstruct(["div", {style: {display: "inline-block"}, key: 0}, [this.props.children]]));
+        return super.render(this.reconstruct(["div", {style: {display: "inline-block"}, key: 0}, this.props.children]));
     }
 
     mouseEnter() {
