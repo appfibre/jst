@@ -1,4 +1,4 @@
-function renderApp(app) {
+module.exports = function (app) {
     const _context = {};
     
     function _construct(parent) {
@@ -95,6 +95,7 @@ function renderApp(app) {
         if (!target.id) target.setAttribute("id", "main");
     } else if (typeof target === "string")
         target = document.getElementById(target);
+    if (target == null) throw new Error(`Cannot locate target (${target?'not specified':target}) in html document body.`);
     if (target.hasChildNodes()) target.innerHTML = "";
     if (app.title) document.title = app.title;
     if (module && module.hot) module.hot.accept();
@@ -107,4 +108,3 @@ function renderApp(app) {
     app.ui.render(parse(ui), target);
 }
 
-export {renderApp};

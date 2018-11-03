@@ -45,7 +45,7 @@
     "Preact"
   ],
   "license": "MIT",
-  "main": "loader.js",
+  "main": "index.js",
   "name": "@appfibre/jst-preact",
   "repository": {
     "type": "git",

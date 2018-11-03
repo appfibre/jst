@@ -15,6 +15,6 @@ module.exports = {
 
         //return h.t.callExpression(h.t.memberExpression(obj["ui"], h.t.identifier("renderApp")), [ h.t.objectExpression(props) ]);
         
-        return h.t.callExpression(h.t.memberExpression(h.t.callExpression(h.t.identifier("require"), [ h.t.stringLiteral("@appfibre/jst/app.js")]), h.t.identifier("renderApp")), [h.t.objectExpression(props)]);
+        return h.t.callExpression(h.t.memberExpression(h.t.callExpression(h.t.identifier("require"), [ h.t.stringLiteral("@appfibre/jst")]), h.t.identifier("app")), [h.t.objectExpression(props)]);
     }    
 }
