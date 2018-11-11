@@ -1,29 +1,4 @@
 {
-  "_from": "@appfibre/jst-react",
-  "_id": "@appfibre/jst-react@0.1.0",
-  "_inBundle": false,
-  "_integrity": "sha512-d9m/GLEyPxRyaN+WOV5y0NXPR3ItiEkzsKTgIXp5SjflMdVHU9sq/vLDnSkcTYMu9ejH8mUJXb64ak82xT6GxA==",
-  "_location": "/@appfibre/jst-react",
-  "_phantomChildren": {},
-  "_requested": {
-    "type": "tag",
-    "registry": true,
-    "raw": "@appfibre/jst-react",
-    "name": "@appfibre/jst-react",
-    "escapedName": "@appfibre%2fjst-react",
-    "scope": "@appfibre",
-    "rawSpec": "",
-    "saveSpec": null,
-    "fetchSpec": "latest"
-  },
-  "_requiredBy": [
-    "#USER",
-    "/"
-  ],
-  "_resolved": "https://registry.npmjs.org/@appfibre/jst-react/-/jst-react-0.1.0.tgz",
-  "_shasum": "c39711a2710288a6c48d4a1ed129100b487b2062",
-  "_spec": "@appfibre/jst-react",
-  "_where": "C:\\Code\\appfibre\\jst\\node\\multientry",
   "author": {
     "name": "Dawid Rautenbach",
     "email": "dawid@rautenbach.za.net"
@@ -33,7 +8,7 @@
   },
   "bundleDependencies": false,
   "dependencies": {
-    "jst-syntax": "^1.0.6",
+    "@appfibre/jst": "^0.1.3",
     "react": "^16.3.2",
     "react-dom": "^16.3.2"
   },
@@ -55,5 +30,5 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "version": "0.1.0"
+  "version": "0.1.2"
 }

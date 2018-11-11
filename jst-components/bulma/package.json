@@ -8,7 +8,7 @@
   },
   "bundleDependencies": false,
   "dependencies": {
-    "@bulma": "^0.0.0"
+    "bulma": "^0.3.0"
   },
   "deprecated": false,
   "description": "Bulma css components helper for jst app",
@@ -28,5 +28,5 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "version": "0.1.0"
+  "version": "0.0.1"
 }
