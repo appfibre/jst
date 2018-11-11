@@ -21,31 +21,45 @@ module.exports = function (json) {
 
     var parsers = {
         ".function": function (obj, keys) {
-            return `function ${obj[".function"]?obj[".function"]:""}(${obj["arguments"] ? process(obj["arguments"], true) : ""}){ return ${process(obj["return"])} }`;
+            return `function ${obj[".function"]?obj[".function"]:""}(${obj["arguments"] ? process(obj["arguments"], false, true) : ""}){ return ${process(obj["return"], true)} }`;
         }, 
         ".app": function (obj, keys) {
             Object.defineProperty(obj, 'app', Object.getOwnPropertyDescriptor(obj, '.app'));
             delete obj['.app'];
-            return `require('@appfibre/jst').app( ${process(obj)} )`;
+            return `require('@appfibre/jst').app( ${process(obj, true)} )`;
         },
         ".require": function (obj, keys) {
             return req(obj[".require"]);
+        },
+        ".map": function (obj, keys) {
+            return `${process(obj[".map"], false, false)}.map((${obj["arguments"]}) => ${process(obj["return"], true, false)})`;
+        },
+        ".filter": function (obj, keys) {
+            console.log(`${process(obj[".filter"], false, false)}.filter((${obj["arguments"]}) => ${process(obj["condition"], true, false)})`);
+            return `${process(obj[".filter"], false, false)}.filter((${obj["arguments"]}) => ${process(obj["condition"], true, false)})`;
+        },
+        ".": function (obj, keys) {
+            return obj["."];
         }
     }
     
-    function process(obj, et) {
+    function process(obj, esc, et) {
         if (obj === null)
-            return obj;
+            return "null";
         if (Array.isArray(obj))
-            return (et ? "" : "[") + obj.map(e => process(e)) + (et ? "" : "]") ;
+            return (et ? "" : "[") + obj.map(e => process(e, esc)) + (et ? "" : "]") ;
         else if (typeof obj === "object") {
             var keys = Object.keys(obj);
             for (var k in keys)
-                if (keys[k].startsWith(".") && parsers[keys[k]])
+                if (keys[k].startsWith(".")) {
+                    if (parsers[keys[k]])
                         return parsers[keys[k]](obj, keys);
-            return (et ? "" : "{")  + keys.filter(k => !k.startsWith("..")).map(k => "\"" + k + "\": " + process(obj[k])) + (et ? "" : "}") ;
+                    else 
+                        console.error(`Could not locate parser ${keys[k].substr(1)}`)
+                }
+            return (et ? "" : "{")  + keys.filter(k => !k.startsWith("..")).map(k => "\"" + k + "\": " + process(obj[k], esc)) + (et ? "" : "}") ;
         } 
-        return JSON.stringify(obj);
+        return esc ? JSON.stringify(obj) : obj;
     }
-    return process(json, false);
+    return process(json, true, false);
 }

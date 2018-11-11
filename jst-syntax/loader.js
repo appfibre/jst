@@ -16,7 +16,7 @@ module.exports = function(input) {
     }
     catch (e)
     {
-        console.log(`Warning: ${name} is not JSON compliant: ${e.message}`);
+        console.warn(`Warning: ${name} is not JSON compliant: ${e.message}`);
     }
 
     if (json != null) {
