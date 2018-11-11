@@ -33,7 +33,6 @@
   },
   "bundleDependencies": false,
   "dependencies": {
-    "babel-loader": "^7.1.4",
     "jst": "^1.0"
   },
   "deprecated": false,

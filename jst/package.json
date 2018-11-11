@@ -44,7 +44,7 @@
     "JST"
   ],
   "license": "MIT",
-  "main": "loader.js",
+  "main": "index.js",
   "name": "@appfibre/jst",
   "repository": {
     "type": "git",

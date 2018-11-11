@@ -22,11 +22,16 @@ exports.default = function (_ref) {
         },
         ObjectProperty(path) {
 
+          var commented = false;
           if (t.isStringLiteral(path.node.key) && path.node.key.value.startsWith(".")) {
             var cmd = path.node.key.value.substring(1);
             //console.log(cmd);
             var expr;
-            if (options && options.parse && options.parse[cmd] && options.parse[cmd].parse)
+            if (cmd.startsWith(".")) 
+              commented = true;
+            else if (cmd == "")
+              expr = options.parse["id"].parse.call(this, _ref, path, name);
+            else if (options && options.parse && options.parse[cmd] && options.parse[cmd].parse)
               expr = options.parse[cmd].parse.call(this, _ref, path, name);
             else
               console.warn ("command not recognized: " + path.node.key.value);
@@ -39,8 +44,8 @@ exports.default = function (_ref) {
               else {
                 console.warn("container is falsy: " + path.node.value);
               }
-            }
-
+            } else if (commented)
+                path.parentPath.replaceWith(t.objectExpression([]));
           } 
         }
       }; 
