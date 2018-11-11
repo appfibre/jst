@@ -1,0 +1,35 @@
+[ "div"
+, null
+, [ [ "table"
+    , { "border": "1px"
+      , "style": { "minWidth": "900px"}
+      }
+    , [ [ "tr"
+        , {}
+        , [ [ "th", null, "Date"]
+          , [ "th", null, "Description"]
+          , [ "th", null, "Speaker"]
+          , [ "th", null, "Location"]
+          ]
+        ]
+      , [ "tbody"
+        , {}
+        , { ".map": { ".filter": { ".require": "./source.json"}
+          , "arguments": "event"
+          , "condition": { ".": "event < 3"}
+          }
+          , "arguments": "event"
+          , "return": [ "tr"
+          , {}
+          , [ [ "td"
+              , {}
+              , { ".": "event"}
+              ]
+            ]
+          ]
+          }
+        ]
+      ]
+    ]
+  ]
+]
