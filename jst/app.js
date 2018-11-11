@@ -1,5 +1,6 @@
 module.exports = async function (app) {
-    var _inject = require('./components.js').default;
+    var Inject = require('./components.js').Inject;
+    var jstContext = new (require('./context').default)();
     const _context = { state: app.defaultState || {}};
     
     function _construct(parent) {
@@ -30,7 +31,8 @@ module.exports = async function (app) {
         if (_cache[fullpath])  return _cache[fullpath];
         if (fullpath.startsWith("~")) {
             var parts = fullpath.substring(1, fullpath.length).split('#');
-            var obj = xhr(parts[0], true);
+            //var obj = AppContext.xhr(parts[0], true);
+            var obj = jstContext.load(parts[0], true);
             if (parts.length == 1)
                 return obj;
             
@@ -42,8 +44,8 @@ module.exports = async function (app) {
             let prop = "default";
             for (var part in path) {
                 if (typeof obj === "function" && obj.name === "inject")
-                        //obj = obj( _inject( app.designer ? class Component extends app.ui.Component { render(obj) { return parse(jst ? [require("@appfibre/jst/intercept.js").default, {"file": jst, "method": prop}, obj] : obj); }}:obj));
-                        obj = obj(_inject(app, _context, Resolve, xhr, _construct(app.ui.Component)));
+                        //obj = obj( Inject( app.designer ? class Component extends app.ui.Component { render(obj) { return parse(jst ? [require("@appfibre/jst/intercept.js").default, {"file": jst, "method": prop}, obj] : obj); }}:obj));
+                        obj = obj(Inject(app, _context, Resolve, _construct(app.ui.Component), jstContext));
                 
                 if (obj[path[part]] !== undefined) {
                     if (part == path.length-1) jst = obj.__jst;
@@ -53,7 +55,7 @@ module.exports = async function (app) {
                     obj = path[part];
                 else {
                     if (fullpath === "Exception")
-                        return function transform(obj) { return ["pre", {"style":{"color":"red"}}, obj[1].stack]; }
+                        return function transform(obj) { return ["pre", {"style":{"color":"red"}}, obj[1].stack ? obj[1].stack : obj[1]]; }
                     else {
                         console.error('Cannot load ' + fullpath);
                         return class extends app.ui.Component { render () { return parse(["span", {"style":{"color":"red"}}, `${fullpath} not found!`]) }};
@@ -69,7 +71,7 @@ module.exports = async function (app) {
             
             if (typeof obj == "function" /*&& !(obj.prototype.render)*/ && obj.name === "inject") // function Component injection
                 //obj = obj( { Component: class Component extends Component { render(obj) { return _createElement(jst && app.designer ? [require("@appfibre/jst/intercept.js").default, {"file": jst, "method": prop}, obj] : obj); }}, components: app.components, createElement: _createElement, language: "TEST" });
-                obj = obj(_inject(app, _context, Resolve, xhr, jst ? class Component extends app.ui.Component { render(obj) { return parse(app.designer ? [require("@appfibre/jst/intercept.js").default, {"file": jst, "method": prop}, _construct(app.ui.Component)] : obj); }} : _construct(app.ui.Component)));
+                obj = obj(Inject(app, _context, Resolve, jst ? class Component extends app.ui.Component { render(obj) { return parse(app.designer ? [require("@appfibre/jst/intercept.js").default, {"file": jst, "method": prop}, _construct(app.ui.Component)] : obj); }} : _construct(app.ui.Component), jstContext));
 
             return _cache[fullpath] = Array.isArray(obj) ? class Wrapper extends app.ui.Component { shouldComponentUpdate() { return true; } render() {if (!obj[1]) obj[1] = {}; if   (!obj[1].key) obj[1].key = 0; return parse(jst && app.designer ? [require("@appfibre/jst/intercept.js").default, {"file": jst, "method": prop}, obj] : obj); }} : obj;
         }
@@ -82,7 +84,7 @@ module.exports = async function (app) {
             if (typeof ar[0] === "function")
                 switch (ar[0].name) {
                     case "inject": 
-                        ar[0] = ar[0](_inject(app, _context, Resolve, xhr, _construct(app.ui.Component)));
+                        ar[0] = ar[0](Inject(app, _context, Resolve, _construct(app.ui.Component), jstContext));
                         break;
                     case "transform":
                         return parse(ar[0](ar), supportAsync);
@@ -140,53 +142,6 @@ module.exports = async function (app) {
         
         return isAsync ? new Promise(resolve => Promise.all(obj).then(o => resolve(processElement(o, supportAsync)))) : processElement([obj[0], obj1, obj[2]], supportAsync);
     }
-
-
-
-    function xhr (url, parse) {
-        function parseContent(rq) {
-            var contentType = rq.getResponseHeader("content-type");
-            if (contentType.startsWith("application/json") || contentType.startsWith("application/jst") || contentType.startsWith("null;")) {
-                var output = require('@appfibre/jst').transform(JSON.parse(rq.responseText));
-                return eval(`[${output}]`)[0];
-            }
-            return  eval(rq.responseText);
-        } 
-
-        return new Promise((resolve, reject) => {
-            try{
-                var rq = new XMLHttpRequest();
-                rq.open('get',url, true, null, null);
-                rq.onloadend = function () {
-                    if (rq.status == 200) {
-                        try
-                        {
-                            resolve(parse ? parseContent(rq) : rq.responseText);
-                        }
-                        catch (e)
-                        {
-                            reject(new Error(`Unable to parse response from: ${url}, error: ${e.message}`));
-                        }
-                    }
-                    else
-                        reject(rq.responseText);
-                };
-                rq.send();
-            } catch (e) {
-                reject(e);
-            }
-        });
-    }
-
-    var target = app.target || document.body;
-    if (target === document.body) {
-        target = document.getElementById("main") || document.body.appendChild(document.createElement("div"));
-        if (!target.id) target.setAttribute("id", "main");
-    } else if (typeof target === "string")
-        target = document.getElementById(target);
-    if (target == null) throw new Error(`Cannot locate target (${target?'not specified':target}) in html document body.`);
-    if (app.title) document.title = app.title;
-    if (module && module.hot) module.hot.accept();
 
     class App extends _construct(app.ui.Component)
     {
@@ -248,13 +203,28 @@ module.exports = async function (app) {
     if (app.designer)
         ui = [(window.parent === null || window === window.parent) ? app.designer : require('@appfibre/jst/intercept.js').default, app ? { file: app.app ? app.app.__jst : null } : {}, ui];
 
-    if (typeof ui === "function" && !ui.prototype.render) ui = ui(_inject(app, _context, Resolve, xhr, _construct(app.ui.Component)));
+    if (typeof ui === "function" && !ui.prototype.render) ui = ui(Inject(app, _context, Resolve, _construct(app.ui.Component), jstContext));
 
     var mapRecursive = obj => Array.isArray(obj) ? obj.map(t => mapRecursive(t)) : obj;
     if (Array.isArray(ui)) ui = mapRecursive(ui);
 
     ui = app.async ? await parse(ui, null, true) : parse (ui);
     //ui = parse(ui);
-    if (target.hasChildNodes()) target.innerHTML = "";
-    app.ui.render(processElement([App, _context, ui]), target);
+    
+    document.addEventListener("DOMContentLoaded", function(event) { 
+
+        var target = app.target || document.body;
+        if (target === document.body) {
+            target = document.getElementById("main") || document.body.appendChild(document.createElement("div"));
+            if (!target.id) target.setAttribute("id", "main");
+        } else if (typeof target === "string")
+            target = document.getElementById(target);
+        if (target == null) throw new Error(`Cannot locate target (${target?'not specified':target}) in html document body.`);
+        if (app.title) document.title = app.title;
+        if (module && module.hot) module.hot.accept();
+
+        if (target.hasChildNodes()) target.innerHTML = "";
+        app.ui.render(processElement([App, _context, ui]), target);
+    });
+
 }

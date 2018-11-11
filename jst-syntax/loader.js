@@ -21,6 +21,7 @@ module.exports = function(input) {
 
     if (json != null) {
         return babel.transform(`export default ${require('@appfibre/jst').transform(json, settings)}`).code;
+        //return babel.transform(`export default ${require('@appfibre/jst').transform(json, settings)}`).code;
     } else {
 
         if (this._module)
