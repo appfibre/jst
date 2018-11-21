@@ -1,0 +1,1 @@
+require('@appfibre/jst').app( {"app": ["div",null,"Hello"]} )
