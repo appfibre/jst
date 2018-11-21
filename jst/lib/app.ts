@@ -1,7 +1,6 @@
-import { IAppSettings } from "./interfaces/IAppSettings"
+import { IAppSettings, IContext } from "./types"
 import { Inject } from "./components"
 import { JstContext } from "./JstContext"
-import { IContext } from "./interfaces/IContext";
 import { Intercept } from "./intercept";
 import { Promise } from "./promise";
  

@@ -1,4 +1,4 @@
-import { IContextSettings } from './interfaces/IContextSettings'
+import { IContextSettings } from './types'
 import { transformAsync } from './transform';
 import { Promise } from './promise';
 

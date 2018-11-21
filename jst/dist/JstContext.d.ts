@@ -1,4 +1,4 @@
-import { IContextSettings } from './interfaces/IContextSettings';
+import { IContextSettings } from './types';
 import { Promise } from './promise';
 export declare class JstContext {
     private _transform;

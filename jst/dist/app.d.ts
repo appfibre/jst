@@ -1,2 +1,2 @@
-import { IAppSettings } from "./interfaces/IAppSettings";
+import { IAppSettings } from "./types";
 export declare function app(app: IAppSettings): void;

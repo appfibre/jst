@@ -1,7 +1,6 @@
 import { JstContext } from './JstContext';
 import { transformAsync } from './transform';
-import { IAppSettings } from './interfaces/IAppSettings';
-import { IContext } from './interfaces/IContext';
+import { IAppSettings, IContext } from './types';
 import { Promise } from './promise';
 
 export function Inject (app : IAppSettings, Context : IContext, Resolve : any, Proxy:any, JstContext:JstContext) : any {
