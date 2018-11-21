@@ -1,4 +1,5 @@
 import {transformSync, transformAsync} from './transform';
-//import {app} from './app';
+import { JstContext as Context} from './JstContext';
+import {app} from './app';
 
-export {/*app,*/ transformSync, transformAsync};
+export {app, transformSync, transformAsync, Context};

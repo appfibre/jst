@@ -4,6 +4,8 @@ var transform_1 = require("./transform");
 var promise_1 = require("./promise");
 var JstContext = /** @class */ (function () {
     function JstContext(settings) {
+        this.transformAsync = transform_1.transformAsync;
+        this.transformSync = transform_1.transformSync;
         this._cache = Object();
         this._transform = transform_1.transformAsync.bind(this);
         this._settings = settings;

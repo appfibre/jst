@@ -1,5 +1,5 @@
 import { IContextSettings } from './types'
-import { transformAsync } from './transform';
+import { transformAsync, transformSync } from './transform';
 import { Promise } from './promise';
 
 type ICache = {[key: string]: any}
@@ -16,6 +16,9 @@ export class JstContext  {
         this._settings = settings;
         this.run = this.run.bind(this);
     }
+
+    transformAsync = transformAsync
+    transformSync = transformSync
 
     _require (url : string) {
         return new Promise<any>((resolve:Function,reject:(reason:any)=>PromiseLike<never>) => {
