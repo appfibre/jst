@@ -4,6 +4,7 @@ export interface IParseSettings {
     parsers: {
         [key: string]: IParser;
     };
+    imports: any[string];
 }
 export interface ITransformSettings {
     async?: boolean;
@@ -31,4 +32,5 @@ export interface IContext {
 }
 export interface IContextSettings {
     requireAsync?: boolean;
+    supportsAsync?: boolean;
 }

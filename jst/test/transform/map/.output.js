@@ -1,1 +1,1 @@
-[1,2,3].map((i) => i+1)
+[1,2,3].map(function(i) {return i+1 })

@@ -4,6 +4,7 @@ export interface IParseSettings {
     indent?:number,
     //parsers:{[key:string]:{value:Function;(obj:any, offset?:number):string}}
     parsers:{[key:string]:IParser}
+    imports:any[string];
 }
 
 export interface ITransformSettings {
@@ -35,5 +36,6 @@ export interface IContext {
 }
 
 export interface IContextSettings {
-    requireAsync?:boolean
+      requireAsync?:boolean
+    , supportsAsync?:boolean
 }

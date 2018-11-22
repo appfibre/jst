@@ -1,1 +1,1 @@
-[1,2,3].filter((i) => i>1)
+[1,2,3].filter(function(i) {return i>1 })

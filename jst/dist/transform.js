@@ -1,7 +1,7 @@
 "use strict";
 exports.__esModule = true;
-var req = function (val, reqasync) {
-    var expr = null;
+var req = function (val, parseSettings, reqasync) {
+    var expr = '';
     var keywords = ["this", "self", "window", "module", "parent", "alert", "confirm"];
     if (typeof val === "string") {
         var uri = val.split('#');
@@ -15,10 +15,27 @@ var req = function (val, reqasync) {
                 expr = expr + "." + uri[index];
         }
         if (async)
-            expr = "import(" + ('.' + uri[0]) + ").then(obj=>" + expr + ")";
+            expr = "import(" + ('.' + uri[0]) + ").then(function(obj){return " + expr + "})";
     }
     else
         console.error("todo req " + val);
+    return expr;
+};
+var imp = function (val, parseSettings) {
+    var expr = '';
+    var uri = val.split('#');
+    var async = uri[0].length > 1 && uri[0].charAt(0) == '~';
+    if (async)
+        uri[0] = uri[0].substring(1);
+    for (var index = 0; index < uri.length; index++) {
+        if (index == 0) {
+            if (parseSettings.imports.indexOf(uri[index]) == -1)
+                parseSettings.imports.push(uri[index]);
+            expr = "imports[" + parseSettings.imports.indexOf(uri[index]) + "]";
+        }
+        else
+            expr = expr + "." + uri[index];
+    }
     return expr;
 };
 function process(obj, esc, et, parseSettings, offset) {
@@ -47,27 +64,22 @@ function process(obj, esc, et, parseSettings, offset) {
     return typeof obj === "string" && esc ? JSON.stringify(obj) : obj;
 }
 function initializeSettings(settings) {
-    var parseSettings = { parsers: {}, indent: settings.indent ? 4 : 0 };
+    var parseSettings = { parsers: {}, indent: settings.indent ? 4 : 0, imports: [] };
     parseSettings.parsers[".function"] = function (obj, offset) { return "function " + (obj[".function"] ? obj[".function"] : "") + "(" + (obj["arguments"] ? process(obj["arguments"], false, true, parseSettings, offset) : "") + "){ return " + process(obj["return"], true, false, parseSettings, offset) + " }"; };
     parseSettings.parsers[".app"] = function (obj, offset) {
         var obj2 = {};
         var keys = Object.keys(obj);
         for (var key in keys)
             obj2[keys[key] == ".app" ? "app" : keys[key]] = obj[keys[key]];
-        //Object.defineProperty(obj, 'app', Object.getOwnPropertyDescriptor(obj, '.app')||{});
-        //delete obj['.app'];
         return "require('@appfibre/jst').app( " + process(obj2, true, false, parseSettings, offset) + " )";
     };
-    parseSettings.parsers[".map"] = function (obj, offset) { return process(obj[".map"], false, false, parseSettings, offset) + ".map((" + obj["arguments"] + ") => " + (settings && settings.indent ? "\r\n" + new Array(offset).join(' ') : "") + process(obj["return"], true, false, parseSettings, offset) + ")"; };
-    parseSettings.parsers[".filter"] = function (obj, offset) { return process(obj[".filter"], false, false, parseSettings, offset) + ".filter((" + obj["arguments"] + ") => " + process(obj["condition"], true, false, parseSettings, offset) + ")"; };
-    parseSettings.parsers[".require"] = function (obj, offset) { return req(obj[".require"], settings && settings.async); };
+    parseSettings.parsers[".map"] = function (obj, offset) { return process(obj[".map"], false, false, parseSettings, offset) + ".map(function(" + obj["arguments"] + ") {return " + (settings && settings.indent ? new Array(offset).join(' ') : "") + process(obj["return"], true, false, parseSettings, offset) + " })"; };
+    parseSettings.parsers[".filter"] = function (obj, offset) { return process(obj[".filter"], false, false, parseSettings, offset) + ".filter(function(" + obj["arguments"] + ") {return " + process(obj["condition"], true, false, parseSettings, offset) + " })"; };
+    parseSettings.parsers[".require"] = function (obj, offset) { return req(obj[".require"], parseSettings, settings && settings.async); };
+    parseSettings.parsers[".import"] = function (obj, offset) { return imp(obj[".import"], parseSettings); };
     parseSettings.parsers["."] = function (obj, offset) { return obj["."]; };
     return parseSettings;
 }
-function transformSync(json, settings) {
-    return process(json, true, false, initializeSettings(settings || {}), 0);
-}
-exports.transformSync = transformSync;
 /*
 function chain (obj:any, settings:IParseSettings, resolve:Function, reject:Function) {
     if (obj && !obj.then)
@@ -121,7 +133,19 @@ function processAsync(obj, esc, et, parseSettings, offset, resolve, reject) {
     else
         return typeof obj === "string" && esc ? JSON.stringify(obj) : obj;
 }
+function wrapWithPromises(val, parseSettings) {
+    if (parseSettings.imports.length > 0) {
+        val = "require ([\"" + parseSettings.imports.join('","') + "\"]).then(function (imports) { return " + val + " }, reject)";
+    }
+    return val;
+}
+function transformSync(json, settings) {
+    var parseSettings = initializeSettings(settings || {});
+    return wrapWithPromises(process(json, true, false, parseSettings, 0), parseSettings);
+}
+exports.transformSync = transformSync;
 function transformAsync(json, settings, resolve, reject) {
-    return processAsync(json, true, false, initializeSettings(settings || {}), 0, resolve, reject);
+    var parseSettings = initializeSettings(settings || {});
+    return processAsync(json, true, false, parseSettings, 0, function (output) { return resolve(wrapWithPromises(output, parseSettings)); }, reject);
 }
 exports.transformAsync = transformAsync;

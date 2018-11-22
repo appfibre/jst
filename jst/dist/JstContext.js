@@ -20,25 +20,28 @@ var JstContext = /** @class */ (function () {
                 if (xhr.status == 200) {
                     _this.run(xhr.responseText).then(function (output) {
                         _this._cache[url] = output;
-                        resolve.call(output);
-                        return output;
+                        resolve(output);
                     }, reject); //reason => reject(reason)
                 }
                 else
-                    reject(xhr.responseText);
+                    reject("Failed to resolve url " + url + ": HTTP " + xhr.status + " " + xhr.statusText);
             };
             xhr.send();
         });
     };
     JstContext.prototype.run = function (str) {
+        var _this = this;
         var _req = this._require.bind(this);
         function require(url) {
-            return _req(url);
+            if (typeof url === "string")
+                return _req(url);
+            else
+                return promise_1.Promise.all(url.map(function (u) { return _req(u); }));
         }
         ;
         return new promise_1.Promise(function (resolve, reject) {
             try {
-                var response = eval("(async function run() {return " + str + "})()");
+                var response = _this._settings.supportsAsync ? eval("(async function run() {return " + str + "})")() : eval("(function run() {return " + str + "})")();
                 if (response.then)
                     response.then(resolve, reject); //.then(output => {resolve(output)}, reason => reject(reason));
                 else

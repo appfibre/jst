@@ -28,12 +28,11 @@ export class JstContext  {
                 if (xhr.status == 200) {
                     this.run(xhr.responseText).then(output => {
                         this._cache[url] = output;
-                        resolve.call(output);
-                        return output;
+                        resolve(output);
                     }, reject);       //reason => reject(reason)
                 }
                 else 
-                    reject(xhr.responseText);
+                    reject(`Failed to resolve url ${url}: HTTP ${xhr.status} ${xhr.statusText}`);
             };
             xhr.send();
         });
@@ -41,13 +40,16 @@ export class JstContext  {
 
     run(str:string)  {
         var _req = this._require.bind(this);
-        function require(url:string) {
-            return _req(url);
+        function require(url:string|string[]) {
+            if (typeof url === "string")
+                return _req(url);
+            else
+                return Promise.all(url.map(u => _req(u)));
         };
     
         return new Promise<any>((resolve:Function,reject:(reason:any)=>PromiseLike<never>) => {
             try {
-                var response = eval(`(async function run() {return ${str}})()`);
+                var response = this._settings.supportsAsync  ? eval(`(async function run() {return ${str}})`)() : eval(`(function run() {return ${str}})`)();
                 if (response.then)
                     response.then(resolve,reject)//.then(output => {resolve(output)}, reason => reject(reason));
                 else

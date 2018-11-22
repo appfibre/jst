@@ -1,7 +1,7 @@
 import {ITransformSettings, IParseSettings} from './types'
 
-let req = function(val:any, reqasync?:boolean) {
-    var expr = null;
+let req = function(val:any, parseSettings:IParseSettings, reqasync?:boolean) : string {
+    var expr = '';
     var keywords = ["this", "self", "window", "module", "parent", "alert", "confirm"];
     if (typeof val === "string")  {
         var uri = val.split('#');
@@ -13,9 +13,27 @@ let req = function(val:any, reqasync?:boolean) {
             else 
                 expr = `${expr}.${uri[index]}`;
         }
-        if (async) expr = `import(${'.'+uri[0]}).then(obj=>${expr})`;
+        if (async) expr = `import(${'.'+uri[0]}).then(function(obj){return ${expr}})`;
     }
         else console.error(`todo req ${val}`); 
+    return expr;
+}
+
+let imp = function(val:string, parseSettings:IParseSettings) : string
+{
+    var expr = '';
+    var uri = val.split('#');
+    var async = uri[0].length > 1 && uri[0].charAt(0) == '~';
+    if (async) uri[0] = uri[0].substring(1);
+    for (var index = 0; index < uri.length; index++) {
+        if (index == 0) {
+            if (parseSettings.imports.indexOf(uri[index]) == -1)
+                parseSettings.imports.push(uri[index]);
+            expr = `imports[${parseSettings.imports.indexOf(uri[index])}]`;
+        }
+        else 
+            expr = `${expr}.${uri[index]}`;
+    }
     return expr;
 }
 
@@ -48,29 +66,24 @@ function process(obj:any, esc:boolean, et:boolean, parseSettings:IParseSettings,
 }
 
 function initializeSettings(settings:ITransformSettings) : IParseSettings {
-    let parseSettings:IParseSettings = { parsers: {}, indent: settings.indent ? 4 : 0 };
+    let parseSettings:IParseSettings = { parsers: {}, indent: settings.indent ? 4 : 0, imports: [] };
     
     parseSettings.parsers[".function"] = function (obj:any, offset?:number) : any { return `function ${obj[".function"]?obj[".function"]:""}(${obj["arguments"] ? process(obj["arguments"], false, true, parseSettings, offset) : ""}){ return ${process(obj["return"], true, false, parseSettings, offset)} }`;};
     parseSettings.parsers[".app"] = function (obj:any, offset?:number) : any {
         var obj2:{[key:string]:any} = {};
         var keys = Object.keys(obj);
         for (var key in keys) obj2[keys[key] == ".app" ? "app" : keys[key]] = obj[keys[key]];
-        
-        //Object.defineProperty(obj, 'app', Object.getOwnPropertyDescriptor(obj, '.app')||{});
-        //delete obj['.app'];
         return `require('@appfibre/jst').app( ${process(obj2, true, false, parseSettings, offset)} )`;
     };
-    parseSettings.parsers[".map"] = function (obj:any, offset?:number) : any {return `${process(obj[".map"], false, false, parseSettings, offset)}.map((${obj["arguments"]}) => ${settings && settings.indent ? "\r\n" + new Array(offset).join(' ') :""}${process(obj["return"], true, false, parseSettings, offset)})`};
-    parseSettings.parsers[".filter"] = function (obj:any, offset?:number) : any {return `${process(obj[".filter"], false, false, parseSettings, offset)}.filter((${obj["arguments"]}) => ${process(obj["condition"], true, false, parseSettings, offset)})`};
-    parseSettings.parsers[".require"] = function (obj:any, offset?:number) : any {return req(obj[".require"], settings && settings.async);};
+    parseSettings.parsers[".map"] = function (obj:any, offset?:number) : any {return `${process(obj[".map"], false, false, parseSettings, offset)}.map(function(${obj["arguments"]}) {return ${settings && settings.indent ? new Array(offset).join(' ') :""}${process(obj["return"], true, false, parseSettings, offset)} })`};
+    parseSettings.parsers[".filter"] = function (obj:any, offset?:number) : any {return `${process(obj[".filter"], false, false, parseSettings, offset)}.filter(function(${obj["arguments"]}) {return ${process(obj["condition"], true, false, parseSettings, offset)} })`};
+    parseSettings.parsers[".require"] = function (obj:any, offset?:number) : any {return req(obj[".require"], parseSettings, settings && settings.async);};
+    parseSettings.parsers[".import"] = function (obj:any, offset?:number) : any {return imp(obj[".import"], parseSettings);};
     parseSettings.parsers["."] = function (obj:any, offset?:number) : any { return obj["."];};
 
     return parseSettings;
 }
 
-export function transformSync (json:object|Array<object>, settings?:ITransformSettings) : string {
-    return process(json, true, false, initializeSettings(settings || {}), 0);
-}
 /*
 function chain (obj:any, settings:IParseSettings, resolve:Function, reject:Function) {
     if (obj && !obj.then)
@@ -126,7 +139,19 @@ function processAsync(obj:any, esc:boolean, et:boolean, parseSettings:IParseSett
         return typeof obj === "string" && esc ? JSON.stringify(obj) : obj;
 }
 
+function wrapWithPromises(val:string, parseSettings:IParseSettings) : string {
+    if (parseSettings.imports.length > 0) {
+        val = `require (["${parseSettings.imports.join('","')}"]).then(function (imports) { return ${val} }, reject)`;
+    }
+    return val;
+}
+
+export function transformSync (json:object|Array<object>, settings?:ITransformSettings) : string {
+    var parseSettings = initializeSettings(settings || {});
+    return wrapWithPromises(process(json, true, false, parseSettings, 0), parseSettings);
+}
 
 export function transformAsync (json:object|Array<object>, settings:ITransformSettings, resolve:Function, reject:Function) : void {
-    return processAsync(json, true, false, initializeSettings(settings || {}), 0, resolve, reject);
+    var parseSettings = initializeSettings(settings || {});
+    return processAsync(json, true, false, parseSettings, 0, (output:string)=>resolve(wrapWithPromises(output, parseSettings)), reject);
 }
