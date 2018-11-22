@@ -9,7 +9,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@appfibre/jst": "^0.1.0"
+    "@appfibre/jst": "^0.1.3",
+    "@babel/preset-env": "^7.1.5",
+    "pinkie": "^2.0.4",
+    "pinkie-promise": "^2.0.1"
   },
   "devDependencies": {
     "bulma": "^0.7.2",

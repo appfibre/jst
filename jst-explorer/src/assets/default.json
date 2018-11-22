@@ -14,7 +14,7 @@
         ]
       , [ "tbody"
         , {}
-        , { ".map": { ".filter": { ".require": "./source.json"}
+        , { ".map": { ".filter": { ".import": "./source.json"}
           , "arguments": "event"
           , "condition": { ".": "event < 3"}
           }
