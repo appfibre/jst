@@ -1,0 +1,10 @@
+[
+        { "Title" : "Sunday Service", "Date" : "2018-11-25", "Speaker": "Jan Willem Mout", "Location": [["Label", {}, "The Emmaus Church Centre"],["br"],["Label", {}, "Clover St"],["br"],["Label", {}, "Chatham "],["br"],["Label", {}, "ME4 4DT"]], "Image": "./images/thumbnails/20181125.png", "Link": "./pdf/20181124.pdf"}
+      , { "Title" : "Sunday Service", "Date" : "2018-11-24", "Speaker": "Jan Willem Mout", "Location": [["Label", {}, "Old Farm"],["br"],["Label", {}, "Uckfield"]], "Image": "./images/thumbnails/20181124.png", "Link": "./pdf/20181125.pdf"}
+      , { "Title" : "Concert Autumn", "Date" : "2018-11-17", "Speaker": "Russian Choir", "Location": [["Label", {}, "The Emmaus Church Centre"],["br"],["Label", {}, "Clover St"],["br"],["Label", {}, "Chatham "],["br"],["Label", {}, "ME4 4DT"]], "Image": "./images/thumbnails/20181117.png", "Link": "./pdf/20181117.pdf"}
+      , { "Title" : "Sanctification, Justication, Grace", "Date" : "2018-09-23", "Speaker": "Jan Willem Mout", "Location": [["Label", {}, "St. Barnabas' Church"],["br"],["Label", {}, "Gillingham"]], "Image": "./images/thumbnails/20180923.png", "Link": "./pdf/20180923.png"}
+      , { "Title" : "Effective Prayer", "Date" : "2018-09-22", "Speaker": "Jan Willem Mout", "Location": [["Label", {}, "Civic Centre"],["br"],["Label", {}, "Uckfield"]], "Image": "./images/thumbnails/20180922.png", "Link": "./pdf/20180922.png"}
+      , { "Title" : "The revival of hour hearts", "Date" : "2018-07-22", "Speaker": "Jan Willem Mout", "Location": [["Label", {}, "St. Barnabas' Church"],["br"],["Label", {}, "Gillingham"]], "Image": "./images/thumbnails/20180722.png"}
+      , { "Title" : "The abundant heart", "Date" : "2018-07-21", "Speaker": "Jan Willem Mout", "Location": [["Label", {}, "Old Farm"],["br"],["Label", {}, "Uckfield"]], "Image": "./images/thumbnails/20180721.png"}
+    
+]

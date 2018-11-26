@@ -34,6 +34,16 @@ function app(app) {
             return class_1;
         }(jstComponent));
     }
+    function getFunctionName(obj) {
+        if (obj.name)
+            return obj.name;
+        var name = obj.toString();
+        if (name.indexOf('(') > -1)
+            name = name.substr(0, name.indexOf('{'));
+        if (name.indexOf('function') > -1)
+            name = name.substr(name.indexOf('function') + 'function'.length);
+        return name.trim();
+    }
     var _cache = Object();
     function _locate(resource, path) {
         var parts = path.split('.');
@@ -66,7 +76,7 @@ function app(app) {
             var jst_1 = false;
             var prop_1 = "default";
             for (var part = 0; part < path.length; part++) {
-                if (typeof obj_1 === "function" && obj_1.name === "inject")
+                if (typeof obj_1 === "function" && getFunctionName(obj_1) === "inject")
                     //obj = obj( Inject( app.designer ? class Component extends app.ui.Component { render(obj) { return parse(jst ? [require("@appfibre/jst/intercept.js").default, {"file": jst, "method": prop}, obj] : obj); }}:obj));
                     obj_1 = obj_1(components_1.Inject(app, _context, Resolve, _construct(app.ui.Component), jstContext));
                 if (obj_1[path[part]] !== undefined) {
@@ -98,7 +108,7 @@ function app(app) {
             }
             else if (jst_1)
                 prop_1 = path[path.length - 1];
-            if (typeof obj_1 == "function" /*&& !(obj.prototype.render)*/ && obj_1.name === "inject") // function Component injection
+            if (typeof obj_1 == "function" /*&& !(obj.prototype.render)*/ && getFunctionName(obj_1) === "inject") // function Component injection
                 //obj = obj( { Component: class Component extends Component { render(obj) { return _createElement(jst && app.designer ? [require("@appfibre/jst/intercept.js").default, {"file": jst, "method": prop}, obj] : obj); }}, components: app.components, createElement: _createElement, language: "TEST" });
                 obj_1 = obj_1(components_1.Inject(app, _context, Resolve, jst_1 ? /** @class */ (function (_super) {
                     __extends(Component, _super);
@@ -125,7 +135,7 @@ function app(app) {
         var done = false;
         while (!done) {
             if (typeof ar[0] === "function")
-                switch (ar[0].name) {
+                switch (getFunctionName(ar[0])) {
                     case "inject":
                         ar[0] = ar[0](components_1.Inject(app, _context, Resolve, _construct(app.ui.Component), jstContext));
                         break;
@@ -254,26 +264,46 @@ function app(app) {
     var mapRecursive = function (obj) { return Array.isArray(obj) ? obj.map(function (t) { return mapRecursive(t); }) : obj; };
     if (Array.isArray(ui))
         ui = mapRecursive(ui);
-    function onParsed(ui) {
-        document.addEventListener("DOMContentLoaded", function (event) {
-            var target = app.target || document.body;
-            if (target === document.body) {
-                target = document.getElementById("main") || document.body.appendChild(document.createElement("div"));
-                if (!target.id)
-                    target.setAttribute("id", "main");
-            }
-            else if (typeof target === "string")
-                target = document.getElementById(target);
-            if (target == null)
-                throw new Error("Cannot locate target (" + (target ? 'not specified' : target) + ") in html document body.");
-            if (app.title)
-                document.title = app.title;
-            //if (module && module.hot) module.hot.accept();
-            if (target.hasChildNodes())
-                target.innerHTML = "";
-            app.ui.render(processElement([App, _context, ui]), target);
+    function render(ui, resolve, reject) {
+        var target = app.target || document.body;
+        if (document && target === document.body) {
+            target = document.getElementById("main") || document.body.appendChild(document.createElement("div"));
+            if (!target.id)
+                target.setAttribute("id", "main");
+        }
+        else if (typeof target === "string")
+            target = document.getElementById(target);
+        if (target == null)
+            throw new Error("Cannot locate target (" + (target ? 'not specified' : target) + ") in html document body.");
+        if (app.title)
+            document.title = app.title;
+        //if (module && module.hot) module.hot.accept();
+        if (target.hasChildNodes())
+            target.innerHTML = "";
+        (resolve) ? resolve(app.ui.render(processElement([App, _context, ui]), target)) : app.ui.render(processElement([App, _context, ui]), target);
+    }
+    function init(ui, resolve, reject) {
+        if (app.target != null && app.target && typeof app.target !== "string")
+            render(ui, resolve, reject);
+        else if (document) {
+            if (!document.body)
+                document.addEventListener("DOMContentLoaded", function (event) { render(ui, resolve, reject); });
+            else
+                render(ui, resolve, reject);
+        }
+        else if (reject)
+            reject("Cannot locate document object to ");
+    }
+    if (app.async) {
+        return new promise_1.Promise(function (resolve, reject) {
+            var parsed = parse(ui, undefined, true);
+            if (parsed && parsed.then)
+                parsed.then(function (parsed) { return init(parsed); }, resolve, reject);
+            else
+                init(parsed, resolve, reject);
         });
     }
-    (app.async) ? parse(ui, undefined, true).then(onParsed) : onParsed(parse(ui));
+    else
+        init(parse(ui));
 }
 exports.app = app;

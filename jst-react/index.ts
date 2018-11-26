@@ -1,18 +1,19 @@
-"use strict";
-exports.__esModule = true;
-var preact_1 = require("preact");
-exports.render = preact_1.render;
-exports.Component = preact_1.Component;
-function processElement(tag, attributes, children) {
+import { createElement, Component } from 'react';
+import { render } from 'react-dom';
+
+function processElement(tag:any, attributes?:object|undefined, children?:any|undefined) : any {
     if (typeof tag === "function" && Array.isArray(children)) {
         if (children.length > 1) {
             console.warn("Class/function tags cannot have more than one direct child elements, wrapping elements in a div tag");
             return processElement(tag, attributes, processElement("div", {}, children));
-        }
-        else {
+        } 
+        else { 
             children = children[0];
         }
     }
-    return preact_1.h(tag, attributes || null, children ? children : null);
+
+    return createElement(tag, attributes, children ? children : null);   
 }
-exports.processElement = processElement;
+
+
+export {render, processElement, Component};

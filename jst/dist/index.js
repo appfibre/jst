@@ -7,3 +7,5 @@ var JstContext_1 = require("./JstContext");
 exports.Context = JstContext_1.JstContext;
 var app_1 = require("./app");
 exports.app = app_1.app;
+var promise_1 = require("./promise");
+exports.Promise = promise_1.Promise;

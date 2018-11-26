@@ -4,7 +4,7 @@ import { JstContext } from "./JstContext"
 import { Intercept } from "./intercept";
 import { Promise } from "./promise";
  
-export function app (app:IAppSettings) : void {
+export function app (app:IAppSettings) : any {
     var jstContext = new JstContext({requireAsync: true});
     const _context :IContext = { state: app.defaultState || {}};
     
@@ -16,6 +16,17 @@ export function app (app:IAppSettings) : void {
                 return obj == null || typeof obj === "string" || obj.$$typeof ? obj : parse(obj);
             }
         }
+    }
+
+    function getFunctionName(obj:any):string{
+        if (obj.name)
+            return obj.name;
+        var name = obj.toString();
+        if (name.indexOf('(') > -1)
+            name = name.substr(0, name.indexOf('('));
+        if (name.indexOf('function') > -1)
+            name = name.substr(name.indexOf('function') + 'function'.length);
+        return name.trim();
     }
 
     var _cache = Object();
@@ -50,7 +61,7 @@ export function app (app:IAppSettings) : void {
             let prop = "default";
             
             for (var part = 0; part < path.length; part++) {
-                if (typeof obj === "function" && obj.name === "inject")
+                if (typeof obj === "function" && getFunctionName(obj) === "inject")
                         //obj = obj( Inject( app.designer ? class Component extends app.ui.Component { render(obj) { return parse(jst ? [require("@appfibre/jst/intercept.js").default, {"file": jst, "method": prop}, obj] : obj); }}:obj));
                         obj = obj(Inject(app, _context, Resolve, _construct(app.ui.Component), jstContext));
                 
@@ -76,7 +87,7 @@ export function app (app:IAppSettings) : void {
             } else if (jst)
                 prop = path[path.length-1];
             
-            if (typeof obj == "function" /*&& !(obj.prototype.render)*/ && obj.name === "inject") // function Component injection
+            if (typeof obj == "function" /*&& !(obj.prototype.render)*/ && getFunctionName(obj) === "inject") // function Component injection
                 //obj = obj( { Component: class Component extends Component { render(obj) { return _createElement(jst && app.designer ? [require("@appfibre/jst/intercept.js").default, {"file": jst, "method": prop}, obj] : obj); }}, components: app.components, createElement: _createElement, language: "TEST" });
                 obj = obj(Inject(app, _context, Resolve, jst ? class Component extends app.ui.Component { render(obj:any):any { return parse(app.designer ? [Intercept, {"file": jst, "method": prop}, _construct(app.ui.Component)] : obj); }} : _construct(app.ui.Component), jstContext));
 
@@ -89,7 +100,7 @@ export function app (app:IAppSettings) : void {
         var done = false;
         while (!done) {
             if (typeof ar[0] === "function")
-                switch (ar[0].name) {
+                switch (getFunctionName(ar[0])) {
                     case "inject": 
                         ar[0] = ar[0](Inject(app, _context, Resolve, _construct(app.ui.Component), jstContext));
                         break;
@@ -215,23 +226,45 @@ export function app (app:IAppSettings) : void {
     var mapRecursive:any = (obj:any) => Array.isArray(obj) ? obj.map(t => mapRecursive(t)) : obj;
     if (Array.isArray(ui)) ui = mapRecursive(ui);
 
-    function onParsed(ui:any) {
-        document.addEventListener("DOMContentLoaded", function(event) { 
-            var target:string|HTMLElement|null = app.target || document.body;
-            if (target === document.body) {
-                target = document.getElementById("main") || document.body.appendChild(document.createElement("div"));
-                if (!target.id) target.setAttribute("id", "main");
-            } else if (typeof target === "string")
-                target = document.getElementById(target);
-            if (target == null) throw new Error(`Cannot locate target (${target?'not specified':target}) in html document body.`);
-            if (app.title) document.title = app.title;
-            //if (module && module.hot) module.hot.accept();
-    
-            if (target.hasChildNodes()) target.innerHTML = "";
-            app.ui.render(processElement([App, _context, ui]), target);
-        });
+
+    function render(ui:any, resolve?:any, reject?:any) {
+        var target:string|HTMLElement|null = app.target || document.body;
+        if (document && target === document.body) {
+            target = document.getElementById("main") || document.body.appendChild(document.createElement("div"));
+            if (!target.id) target.setAttribute("id", "main");
+        } else if (typeof target === "string")
+            target = document.getElementById(target);
+        if (target == null) throw new Error(`Cannot locate target (${target?'not specified':target}) in html document body.`);
+        if (app.title) document.title = app.title;
+        //if (module && module.hot) module.hot.accept();
+
+        if (target.hasChildNodes()) target.innerHTML = "";
+        (resolve) ? resolve(app.ui.render(processElement([App, _context, ui]), target)) : app.ui.render(processElement([App, _context, ui]), target);
     }
 
-    (app.async) ? parse(ui, undefined, true).then(onParsed) : onParsed(parse(ui));
+    function init(ui:any, resolve?:any, reject?:any) {
+        if (app.target != null && app.target && typeof app.target !== "string")
+            render(ui, resolve, reject);
+        else if (document)
+        { 
+            if (!document.body)
+                document.addEventListener("DOMContentLoaded", function(event) { render(ui, resolve, reject) });
+            else
+                render(ui, resolve, reject);
+        } else if (reject)
+            reject ("Cannot locate document object to ")
+    }
+
+    if (app.async) {
+        return new Promise(function(resolve:any, reject:any) {
+            var parsed = parse(ui, undefined, true);
+            if (parsed && parsed.then) 
+                parsed.then((parsed:any) => init(parsed), resolve, reject);
+            else
+                init(parsed, resolve, reject);
+        });
+    } 
+    else
+        init(parse(ui));
    
 }

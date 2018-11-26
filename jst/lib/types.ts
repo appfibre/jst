@@ -12,12 +12,6 @@ export interface ITransformSettings {
   , indent?: boolean
 }
 
-export default interface I_UI {
-    Component: any
-  , processElement(tag:string|Object, attributes:Object, children?:Array<Object>):any
-  , render(node: any/*ComponentChild*/, parent: Element | Document | ShadowRoot | DocumentFragment, mergeWith?: Element): Element;   
-}
-
 export interface IAppSettings {
     app: object|Array<object>
   , designer?:Function
@@ -25,7 +19,7 @@ export interface IAppSettings {
   , components: Object
   , target?: string|HTMLElement
   , title?: string
-  , ui: I_UI
+  , ui: {Component: any, processElement(tag:any, attributes?:object|undefined, children?:any|undefined) : any, render:any}
   , async?:boolean
   , stateChanged?:Function
 }

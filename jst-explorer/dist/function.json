@@ -1,0 +1,4 @@
+{ ".function": "inject"
+, "arguments": [ "{Context,Loader}" ]
+, "return": [["div"]]
+}
