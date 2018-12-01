@@ -8,7 +8,7 @@
   },
   "bundleDependencies": false,
   "dependencies": {
-    "@appfibre/jst": "^0.1.3",
+    "@appfibre/jst": "^0.1.4",
     "preact": "^8.2.7"
   },
   "deprecated": false,
@@ -29,5 +29,5 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "version": "1.0.7"
+  "version": "1.0.8"
 }

@@ -1,3 +1,5 @@
 node_modules
 /jst/.vscode
 /jst-designer/package-lock.json
+/jst/dist
+/jst/package-lock.json
