@@ -1,0 +1,11 @@
+{ ".app": { ".function": "inject"
+    , "arguments": [ "app" ]
+    , "return":   [ "div"
+                , { }
+                , "Test"]
+    }
+, "title": "Rivers of living water mission"
+, "ui": {".require": "@appfibre/jst-preact"}
+, "..designer": {".require": "@appfibre/jst/designer#default"}
+, "async": true
+}

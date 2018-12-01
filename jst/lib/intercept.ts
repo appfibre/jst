@@ -41,6 +41,7 @@ var Intercept = function inject ( {Component} : {Component:any} ) {
 
         render() {
             //return super.render(Array.isArray(this.props.children) ? this.reconstruct(["div", {style: {display: "inline-block"}}, this.props.children])  : this.reconstruct(this.props.children));
+            debugger;
             return super.render(this.reconstruct(["div", {style: {display: "inline-block"}, key: 0}, this.props.children]));
         }
 

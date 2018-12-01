@@ -12,11 +12,17 @@ export interface ITransformSettings {
   , indent?: boolean
 }
 
-export interface IAppSettings {
+export interface IModule {
+        scripts?:(string|{src:string, type:string})[]
+      , modules?:(IModule|string)[]
+      , init?:(app:IAppSettings)=>void
+      , components?: Object|Function
+}
+
+export interface IAppSettings extends IModule {
     app: object|Array<object>
   , designer?:Function
   , defaultState?: Object 
-  , components: Object
   , target?: string|HTMLElement
   , title?: string
   , ui: {Component: any, processElement(tag:any, attributes?:object|undefined, children?:any|undefined) : any, render:any}

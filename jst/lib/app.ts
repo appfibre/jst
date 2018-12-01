@@ -1,4 +1,4 @@
-import { IAppSettings, IContext } from "./types"
+import { IAppSettings, IContext, IModule } from "./types"
 import { Inject } from "./components"
 import { JstContext } from "./JstContext"
 import { Intercept } from "./intercept";
@@ -8,7 +8,6 @@ export function app (app:IAppSettings) : any {
     var jstContext = new JstContext({requireAsync: true});
     const _context :IContext = { state: app.defaultState || {}};
     
-    
     function _construct(jstComponent : any) : any {
         return class extends jstComponent {
             render(obj : any) {
@@ -16,6 +15,33 @@ export function app (app:IAppSettings) : any {
                 return obj == null || typeof obj === "string" || obj.$$typeof ? obj : parse(obj);
             }
         }
+    }
+
+    var Async = function inject(app:any) {
+        return class Async extends _construct(app.Component)
+        {
+            constructor(props:any)
+            {
+                super(props);
+                this.state = {
+                value: this.props.value[3],
+                };
+            }
+    
+            componentDidMount() {
+                if (Promise.prototype.isPrototypeOf(this.props.value))
+                    this.props.value.then((value:any) => this.setState({"value": value }), (err:string) =>  this.setState({"value": this.props.value[4] ? this.props.value[4](err) : ["Exception", err]}));
+                else if (this.props.value[0] && this.props.value[0].then)
+                    this.props.value[0].then((value:any) => this.setState({"value": value }), (err:string) =>  this.setState({"value": this.props.value[4] ? this.props.value[4](err) : ["Exception", err]}));
+                else
+                    Promise.all(this.props.value).then(value => this.setState({"value":value})).catch(err => { if (this.props.value[4]) this.setState({"value": this.props.value[4]})});
+            }
+    
+            render() {
+                return this.state.value && typeof this.state.value !== "string" ? super.render(this.state.value) : "";
+            }
+        }
+    
     }
 
     function getFunctionName(obj:any):string{
@@ -61,7 +87,7 @@ export function app (app:IAppSettings) : any {
             let prop = "default";
             
             for (var part = 0; part < path.length; part++) {
-                if (typeof obj === "function" && getFunctionName(obj) === "inject")
+                if (typeof obj === "function" && getFunctionName(obj) === "inject") 
                         //obj = obj( Inject( app.designer ? class Component extends app.ui.Component { render(obj) { return parse(jst ? [require("@appfibre/jst/intercept.js").default, {"file": jst, "method": prop}, obj] : obj); }}:obj));
                         obj = obj(Inject(app, _context, Resolve, _construct(app.ui.Component), jstContext));
                 
@@ -87,14 +113,12 @@ export function app (app:IAppSettings) : any {
             } else if (jst)
                 prop = path[path.length-1];
             
-            if (typeof obj == "function" /*&& !(obj.prototype.render)*/ && getFunctionName(obj) === "inject") // function Component injection
-                //obj = obj( { Component: class Component extends Component { render(obj) { return _createElement(jst && app.designer ? [require("@appfibre/jst/intercept.js").default, {"file": jst, "method": prop}, obj] : obj); }}, components: app.components, createElement: _createElement, language: "TEST" });
+            if (typeof obj == "function" /*&& !(obj.prototype.render)*/ && getFunctionName(obj) === "inject")  // function Component injection 
                 obj = obj(Inject(app, _context, Resolve, jst ? class Component extends app.ui.Component { render(obj:any):any { return parse(app.designer ? [Intercept, {"file": jst, "method": prop}, _construct(app.ui.Component)] : obj); }} : _construct(app.ui.Component), jstContext));
 
             return _cache[fullpath] = Array.isArray(obj) ? class Wrapper extends app.ui.Component { shouldComponentUpdate() { return true; } render() {if (!obj[1]) obj[1] = {}; if   (!obj[1].key) obj[1].key = 0; return parse(jst && app.designer ? [Intercept, {"file": jst, "method": prop}, obj] : obj); }} : obj;
         }
     } 
-
 
     function processElement(ar : Array<any>, supportAsync?: boolean, light?:boolean) {
         var done = false;
@@ -133,16 +157,22 @@ export function app (app:IAppSettings) : any {
 
         var isAsync = false;
 
-        for (var idx = 0; idx < obj.length; idx++)
+        for (var idx = 0; idx < obj.length; idx++) {
+            if (typeof obj[idx] === "function") {
+                //obj[idx] = processElement([obj[idx]], supportAsync, true)[0];
+            }
+
             if (Array.isArray(obj[idx])) {
                 for (var i = 0; i < obj[idx].length; i++) {
                     if (Array.isArray(obj[idx][i]) || typeof obj[idx][i] === "function" || typeof  obj[idx][i] === "object" ) {
                         if (typeof obj[idx][i] === "function" || Array.isArray(obj[idx][i])) obj[idx][i] = (idx==2) ? parse(obj[idx][i], undefined, supportAsync) : processElement(obj[idx][i], supportAsync, true);
-                        if (obj[idx][i].then) isAsync = true;
+                        if (obj[idx][i] && obj[idx][i].then) isAsync = true;
                     } else if (idx == 2)
                         throw new Error(`Expected either double array or string for children Parent:${String(obj[0])}, Child:${JSON.stringify(obj[idx][i], (key,value) => typeof value === "function" ? String(value) : value)}`);
                 }
             }
+        }
+        
         //if (isAsync && !obj[idx].then) obj[idx] = new Promise((resolve,reject) => Promise.all(obj[idx]).then(output => resolve(output), reason => reject(reason)));
         if (isAsync) for (var idx = 0; idx < obj.length; idx++) if (!obj[idx].then) obj[idx] = Promise.all(obj[idx]);
         if (!isAsync && ((typeof obj[0] === "function" &&  obj[0].then) || (typeof obj[1] === "function" &&  obj[1].then))) isAsync = true;
@@ -161,73 +191,28 @@ export function app (app:IAppSettings) : any {
         return isAsync ? new Promise((resolve:any) => Promise.all(obj).then(o => resolve(processElement(o, supportAsync)))) : processElement([obj[0], obj[1], obj[2]], supportAsync);
     }
 
-    class App extends _construct(app.ui.Component)
-    {
-        constructor() 
-        {
-            super();
-            _context.setState = this.setAppState.bind(this);
-        }
-
-        componentWillMount(){
-            this.setState( _context.state, () => {
-                if (app.stateChanged) app.stateChanged.call(this);
-            });
-        }
-
-        setAppState(props:{}, callback?:Function) {
-            if (props != null) {
-                var keys = Object.keys(props);
-                for (var i in keys)
-                    Object.defineProperty(_context.state, keys[i], Object.getOwnPropertyDescriptor(props, keys[i])||{});
-            }
-            this.setState(props, () => {
-                    if (app.stateChanged) app.stateChanged.call(this);
-                    if (callback) callback();
-                });
-        }
-
-        render() {
-            return super.render(this.props.children);
-        }
-    }
-
-    class Async extends _construct(app.ui.Component)
-    {
-        constructor(props:any)
-        {
-            super(props);
-            this.state = {
-            value: this.props.value[3],
-            };
-        }
-
-        componentDidMount() {
-            if (Promise.prototype.isPrototypeOf(this.props.value))
-                this.props.value.then((value:any) => this.setState({"value": value }), (err:string) =>  this.setState({"value": this.props.value[4] ? this.props.value[4](err) : ["Exception", err]}));
-            else if (this.props.value[0] && this.props.value[0].then)
-                this.props.value[0].then((value:any) => this.setState({"value": value }), (err:string) =>  this.setState({"value": this.props.value[4] ? this.props.value[4](err) : ["Exception", err]}));
-            else
-                Promise.all(this.props.value).then(value => this.setState({"value":value})).catch(err => { if (this.props.value[4]) this.setState({"value": this.props.value[4]})});
-        }
-
-        render() {
-            return this.state.value && typeof this.state.value !== "string" ? super.render(this.state.value) : "";
-        }
-    }
-
-
     var ui = app.app;
-    if (app.designer)
-        ui = [(window.parent === null || window === window.parent) ? app.designer : Intercept, app ? { file: app.app ? 'todo'/*app.app.__jst*/ : null } : {}, ui];
+    if (app.designer) {
+            ui = [(window.parent === null || window === window.parent) ? app.designer : Intercept, { file: app.app ? 'todo'/*app.app.__jst*/ : null }, [ui]];
+    }
 
-    if (typeof ui === "function" && !ui.prototype.render) ui = ui(Inject(app, _context, Resolve, _construct(app.ui.Component), jstContext));
+    //if (typeof ui === "function" && !ui.prototype.render) {ui = ui(Inject(app, _context, Resolve, _construct(app.ui.Component), jstContext));}
 
     var mapRecursive:any = (obj:any) => Array.isArray(obj) ? obj.map(t => mapRecursive(t)) : obj;
     if (Array.isArray(ui)) ui = mapRecursive(ui);
 
-
     function render(ui:any, resolve?:any, reject?:any) {
+        function initModule(this:any, module:IModule){
+            if (module.modules)
+                module.modules.forEach(element => {
+                    if (typeof element == 'object')
+                        initModule(element);
+                });    
+            if (module.init) module.init.call(self, app);
+        }
+        
+        initModule(app);
+
         var target:string|HTMLElement|null = app.target || document.body;
         if (document && target === document.body) {
             target = document.getElementById("main") || document.body.appendChild(document.createElement("div"));
@@ -237,34 +222,87 @@ export function app (app:IAppSettings) : any {
         if (target == null) throw new Error(`Cannot locate target (${target?'not specified':target}) in html document body.`);
         if (app.title) document.title = app.title;
         //if (module && module.hot) module.hot.accept();
-
         if (target.hasChildNodes()) target.innerHTML = "";
+
+
+        class App extends _construct(app.ui.Component)
+        {
+            constructor() 
+            {
+                super();
+                _context.setState = this.setAppState.bind(this);
+            }
+    
+            componentWillMount(){
+                this.setState( _context.state, () => {
+                    if (app.stateChanged) app.stateChanged.call(this);
+                });
+            }
+    
+            setAppState(props:{}, callback?:Function) {
+                if (props != null) {
+                    var keys = Object.keys(props);
+                    for (var i in keys)
+                        Object.defineProperty(_context.state, keys[i], Object.getOwnPropertyDescriptor(props, keys[i])||{});
+                }
+                this.setState(props, () => {
+                        if (app.stateChanged) app.stateChanged.call(this);
+                        if (callback) callback();
+                    });
+            }
+    
+            render() {
+                return super.render(this.props.children);
+            }
+        }
+        if (typeof ui === "function" && !ui.prototype.render) ui = ui(Inject(app, _context, Resolve, _construct(app.ui.Component), jstContext));
+        ui = parse(ui, undefined, app.async);
         (resolve) ? resolve(app.ui.render(processElement([App, _context, ui]), target)) : app.ui.render(processElement([App, _context, ui]), target);
     }
+
+    var scripts:string[] = [];
+    if (document && document.scripts) 
+        for (var i = 0; i < document.scripts.length; i++)
+            scripts.push(document.scripts[i].src.toLowerCase());
+    
+    function loadModule(module:IModule) {
+        if (module.modules)
+            module.modules.forEach(element => {
+                if (typeof element == 'object')
+                    loadModule(element);
+            });
+
+        if (module.scripts) 
+            module.scripts.forEach(x => { 
+                var s = document.createElement('script');
+                s.src = typeof x === "object" ? x.src : x;
+                s.type = typeof x === "object" && x.type ? x.type : "text/javascript";
+                if (document.head && (scripts.indexOf(s.src.toLowerCase()) == -1)) {document.head.appendChild(s); scripts.push(s.src.toLowerCase());}
+                if (scripts.indexOf(typeof x === "object" ? x.src : x) == -1) scripts.push(typeof x === "object" ? x.src : x);
+            });
+    }
+    loadModule(app);
 
     function init(ui:any, resolve?:any, reject?:any) {
         if (app.target != null && app.target && typeof app.target !== "string")
             render(ui, resolve, reject);
         else if (document)
         { 
-            if (!document.body)
-                document.addEventListener("DOMContentLoaded", function(event) { render(ui, resolve, reject) });
-            else
+            if (document.readyState !== 'complete') 
+                document.addEventListener("readystatechange", function() {
+                    if (document.readyState === "complete")
+                        render(ui, resolve, reject);
+                });
+            else 
                 render(ui, resolve, reject);
         } else if (reject)
-            reject ("Cannot locate document object to ")
+            reject ("Cannot locate document object to render application")
     }
 
-    if (app.async) {
+    if (app.async) 
         return new Promise(function(resolve:any, reject:any) {
-            var parsed = parse(ui, undefined, true);
-            if (parsed && parsed.then) 
-                parsed.then((parsed:any) => init(parsed), resolve, reject);
-            else
-                init(parsed, resolve, reject);
+            init(ui, resolve, reject);
         });
-    } 
     else
-        init(parse(ui));
-   
+        init(ui);   
 }

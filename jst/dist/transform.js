@@ -75,8 +75,9 @@ function initializeSettings(settings) {
     };
     parseSettings.parsers[".map"] = function (obj, offset) { return process(obj[".map"], false, false, parseSettings, offset) + ".map(function(" + obj["arguments"] + ") {return " + (settings && settings.indent ? new Array(offset).join(' ') : "") + process(obj["return"], true, false, parseSettings, offset) + " })"; };
     parseSettings.parsers[".filter"] = function (obj, offset) { return process(obj[".filter"], false, false, parseSettings, offset) + ".filter(function(" + obj["arguments"] + ") {return " + process(obj["condition"], true, false, parseSettings, offset) + " })"; };
-    parseSettings.parsers[".require"] = function (obj, offset) { return req(obj[".require"], parseSettings, settings && settings.async); };
+    parseSettings.parsers[".require"] = function (obj, offset) { return req(obj[".require"], parseSettings, settings && settings.async) + (obj["arguments"] ? "(" + process(obj["arguments"], true, true, parseSettings, offset) + ")" : ''); };
     parseSettings.parsers[".import"] = function (obj, offset) { return imp(obj[".import"], parseSettings); };
+    parseSettings.parsers[".call"] = function (obj, offset) { return obj[".call"] + ".call(" + (obj["arguments"] ? process(obj["arguments"], false, true, parseSettings, offset) : "") + ")"; };
     parseSettings.parsers["."] = function (obj, offset) { return obj["."]; };
     return parseSettings;
 }

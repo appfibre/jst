@@ -54,6 +54,7 @@ var Intercept = function inject(_a) {
         };
         Intercept.prototype.render = function () {
             //return super.render(Array.isArray(this.props.children) ? this.reconstruct(["div", {style: {display: "inline-block"}}, this.props.children])  : this.reconstruct(this.props.children));
+            debugger;
             return _super.prototype.render.call(this, this.reconstruct(["div", { style: { display: "inline-block" }, key: 0 }, this.props.children]));
         };
         Intercept.prototype.mouseEnter = function () {

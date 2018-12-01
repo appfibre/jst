@@ -34,12 +34,38 @@ function app(app) {
             return class_1;
         }(jstComponent));
     }
+    var Async = function inject(app) {
+        return /** @class */ (function (_super) {
+            __extends(Async, _super);
+            function Async(props) {
+                var _this = _super.call(this, props) || this;
+                _this.state = {
+                    value: _this.props.value[3]
+                };
+                return _this;
+            }
+            Async.prototype.componentDidMount = function () {
+                var _this = this;
+                if (promise_1.Promise.prototype.isPrototypeOf(this.props.value))
+                    this.props.value.then(function (value) { return _this.setState({ "value": value }); }, function (err) { return _this.setState({ "value": _this.props.value[4] ? _this.props.value[4](err) : ["Exception", err] }); });
+                else if (this.props.value[0] && this.props.value[0].then)
+                    this.props.value[0].then(function (value) { return _this.setState({ "value": value }); }, function (err) { return _this.setState({ "value": _this.props.value[4] ? _this.props.value[4](err) : ["Exception", err] }); });
+                else
+                    promise_1.Promise.all(this.props.value).then(function (value) { return _this.setState({ "value": value }); })["catch"](function (err) { if (_this.props.value[4])
+                        _this.setState({ "value": _this.props.value[4] }); });
+            };
+            Async.prototype.render = function () {
+                return this.state.value && typeof this.state.value !== "string" ? _super.prototype.render.call(this, this.state.value) : "";
+            };
+            return Async;
+        }(_construct(app.Component)));
+    };
     function getFunctionName(obj) {
         if (obj.name)
             return obj.name;
         var name = obj.toString();
         if (name.indexOf('(') > -1)
-            name = name.substr(0, name.indexOf('{'));
+            name = name.substr(0, name.indexOf('('));
         if (name.indexOf('function') > -1)
             name = name.substr(name.indexOf('function') + 'function'.length);
         return name.trim();
@@ -108,8 +134,7 @@ function app(app) {
             }
             else if (jst_1)
                 prop_1 = path[path.length - 1];
-            if (typeof obj_1 == "function" /*&& !(obj.prototype.render)*/ && getFunctionName(obj_1) === "inject") // function Component injection
-                //obj = obj( { Component: class Component extends Component { render(obj) { return _createElement(jst && app.designer ? [require("@appfibre/jst/intercept.js").default, {"file": jst, "method": prop}, obj] : obj); }}, components: app.components, createElement: _createElement, language: "TEST" });
+            if (typeof obj_1 == "function" /*&& !(obj.prototype.render)*/ && getFunctionName(obj_1) === "inject") // function Component injection 
                 obj_1 = obj_1(components_1.Inject(app, _context, Resolve, jst_1 ? /** @class */ (function (_super) {
                     __extends(Component, _super);
                     function Component() {
@@ -168,19 +193,23 @@ function app(app) {
         else
             obj = [obj, key ? { key: key } : null];
         var isAsync = false;
-        for (var idx = 0; idx < obj.length; idx++)
+        for (var idx = 0; idx < obj.length; idx++) {
+            if (typeof obj[idx] === "function") {
+                //obj[idx] = processElement([obj[idx]], supportAsync, true)[0];
+            }
             if (Array.isArray(obj[idx])) {
                 for (var i = 0; i < obj[idx].length; i++) {
                     if (Array.isArray(obj[idx][i]) || typeof obj[idx][i] === "function" || typeof obj[idx][i] === "object") {
                         if (typeof obj[idx][i] === "function" || Array.isArray(obj[idx][i]))
                             obj[idx][i] = (idx == 2) ? parse(obj[idx][i], undefined, supportAsync) : processElement(obj[idx][i], supportAsync, true);
-                        if (obj[idx][i].then)
+                        if (obj[idx][i] && obj[idx][i].then)
                             isAsync = true;
                     }
                     else if (idx == 2)
                         throw new Error("Expected either double array or string for children Parent:" + String(obj[0]) + ", Child:" + JSON.stringify(obj[idx][i], function (key, value) { return typeof value === "function" ? String(value) : value; }));
                 }
             }
+        }
         //if (isAsync && !obj[idx].then) obj[idx] = new Promise((resolve,reject) => Promise.all(obj[idx]).then(output => resolve(output), reason => reject(reason)));
         if (isAsync)
             for (var idx = 0; idx < obj.length; idx++)
@@ -199,72 +228,25 @@ function app(app) {
             return processElement([Async, { value: promise_1.Promise.all(obj).then(function (o) { return processElement(o, supportAsync); }) }]);
         return isAsync ? new promise_1.Promise(function (resolve) { return promise_1.Promise.all(obj).then(function (o) { return resolve(processElement(o, supportAsync)); }); }) : processElement([obj[0], obj[1], obj[2]], supportAsync);
     }
-    var App = /** @class */ (function (_super) {
-        __extends(App, _super);
-        function App() {
-            var _this = _super.call(this) || this;
-            _context.setState = _this.setAppState.bind(_this);
-            return _this;
-        }
-        App.prototype.componentWillMount = function () {
-            var _this = this;
-            this.setState(_context.state, function () {
-                if (app.stateChanged)
-                    app.stateChanged.call(_this);
-            });
-        };
-        App.prototype.setAppState = function (props, callback) {
-            var _this = this;
-            if (props != null) {
-                var keys = Object.keys(props);
-                for (var i in keys)
-                    Object.defineProperty(_context.state, keys[i], Object.getOwnPropertyDescriptor(props, keys[i]) || {});
-            }
-            this.setState(props, function () {
-                if (app.stateChanged)
-                    app.stateChanged.call(_this);
-                if (callback)
-                    callback();
-            });
-        };
-        App.prototype.render = function () {
-            return _super.prototype.render.call(this, this.props.children);
-        };
-        return App;
-    }(_construct(app.ui.Component)));
-    var Async = /** @class */ (function (_super) {
-        __extends(Async, _super);
-        function Async(props) {
-            var _this = _super.call(this, props) || this;
-            _this.state = {
-                value: _this.props.value[3]
-            };
-            return _this;
-        }
-        Async.prototype.componentDidMount = function () {
-            var _this = this;
-            if (promise_1.Promise.prototype.isPrototypeOf(this.props.value))
-                this.props.value.then(function (value) { return _this.setState({ "value": value }); }, function (err) { return _this.setState({ "value": _this.props.value[4] ? _this.props.value[4](err) : ["Exception", err] }); });
-            else if (this.props.value[0] && this.props.value[0].then)
-                this.props.value[0].then(function (value) { return _this.setState({ "value": value }); }, function (err) { return _this.setState({ "value": _this.props.value[4] ? _this.props.value[4](err) : ["Exception", err] }); });
-            else
-                promise_1.Promise.all(this.props.value).then(function (value) { return _this.setState({ "value": value }); })["catch"](function (err) { if (_this.props.value[4])
-                    _this.setState({ "value": _this.props.value[4] }); });
-        };
-        Async.prototype.render = function () {
-            return this.state.value && typeof this.state.value !== "string" ? _super.prototype.render.call(this, this.state.value) : "";
-        };
-        return Async;
-    }(_construct(app.ui.Component)));
     var ui = app.app;
-    if (app.designer)
-        ui = [(window.parent === null || window === window.parent) ? app.designer : intercept_1.Intercept, app ? { file: app.app ? 'todo' /*app.app.__jst*/ : null } : {}, ui];
-    if (typeof ui === "function" && !ui.prototype.render)
-        ui = ui(components_1.Inject(app, _context, Resolve, _construct(app.ui.Component), jstContext));
+    if (app.designer) {
+        ui = [(window.parent === null || window === window.parent) ? app.designer : intercept_1.Intercept, { file: app.app ? 'todo' /*app.app.__jst*/ : null }, [ui]];
+    }
+    //if (typeof ui === "function" && !ui.prototype.render) {ui = ui(Inject(app, _context, Resolve, _construct(app.ui.Component), jstContext));}
     var mapRecursive = function (obj) { return Array.isArray(obj) ? obj.map(function (t) { return mapRecursive(t); }) : obj; };
     if (Array.isArray(ui))
         ui = mapRecursive(ui);
     function render(ui, resolve, reject) {
+        function initModule(module) {
+            if (module.modules)
+                module.modules.forEach(function (element) {
+                    if (typeof element == 'object')
+                        initModule(element);
+                });
+            if (module.init)
+                module.init.call(self, app);
+        }
+        initModule(app);
         var target = app.target || document.body;
         if (document && target === document.body) {
             target = document.getElementById("main") || document.body.appendChild(document.createElement("div"));
@@ -280,30 +262,88 @@ function app(app) {
         //if (module && module.hot) module.hot.accept();
         if (target.hasChildNodes())
             target.innerHTML = "";
+        var App = /** @class */ (function (_super) {
+            __extends(App, _super);
+            function App() {
+                var _this = _super.call(this) || this;
+                _context.setState = _this.setAppState.bind(_this);
+                return _this;
+            }
+            App.prototype.componentWillMount = function () {
+                var _this = this;
+                this.setState(_context.state, function () {
+                    if (app.stateChanged)
+                        app.stateChanged.call(_this);
+                });
+            };
+            App.prototype.setAppState = function (props, callback) {
+                var _this = this;
+                if (props != null) {
+                    var keys = Object.keys(props);
+                    for (var i in keys)
+                        Object.defineProperty(_context.state, keys[i], Object.getOwnPropertyDescriptor(props, keys[i]) || {});
+                }
+                this.setState(props, function () {
+                    if (app.stateChanged)
+                        app.stateChanged.call(_this);
+                    if (callback)
+                        callback();
+                });
+            };
+            App.prototype.render = function () {
+                return _super.prototype.render.call(this, this.props.children);
+            };
+            return App;
+        }(_construct(app.ui.Component)));
+        if (typeof ui === "function" && !ui.prototype.render)
+            ui = ui(components_1.Inject(app, _context, Resolve, _construct(app.ui.Component), jstContext));
+        ui = parse(ui, undefined, app.async);
         (resolve) ? resolve(app.ui.render(processElement([App, _context, ui]), target)) : app.ui.render(processElement([App, _context, ui]), target);
     }
+    var scripts = [];
+    if (document && document.scripts)
+        for (var i = 0; i < document.scripts.length; i++)
+            scripts.push(document.scripts[i].src.toLowerCase());
+    function loadModule(module) {
+        if (module.modules)
+            module.modules.forEach(function (element) {
+                if (typeof element == 'object')
+                    loadModule(element);
+            });
+        if (module.scripts)
+            module.scripts.forEach(function (x) {
+                var s = document.createElement('script');
+                s.src = typeof x === "object" ? x.src : x;
+                s.type = typeof x === "object" && x.type ? x.type : "text/javascript";
+                if (document.head && (scripts.indexOf(s.src.toLowerCase()) == -1)) {
+                    document.head.appendChild(s);
+                    scripts.push(s.src.toLowerCase());
+                }
+                if (scripts.indexOf(typeof x === "object" ? x.src : x) == -1)
+                    scripts.push(typeof x === "object" ? x.src : x);
+            });
+    }
+    loadModule(app);
     function init(ui, resolve, reject) {
         if (app.target != null && app.target && typeof app.target !== "string")
             render(ui, resolve, reject);
         else if (document) {
-            if (!document.body)
-                document.addEventListener("DOMContentLoaded", function (event) { render(ui, resolve, reject); });
+            if (document.readyState !== 'complete')
+                document.addEventListener("readystatechange", function () {
+                    if (document.readyState === "complete")
+                        render(ui, resolve, reject);
+                });
             else
                 render(ui, resolve, reject);
         }
         else if (reject)
-            reject("Cannot locate document object to ");
+            reject("Cannot locate document object to render application");
     }
-    if (app.async) {
+    if (app.async)
         return new promise_1.Promise(function (resolve, reject) {
-            var parsed = parse(ui, undefined, true);
-            if (parsed && parsed.then)
-                parsed.then(function (parsed) { return init(parsed); }, resolve, reject);
-            else
-                init(parsed, resolve, reject);
+            init(ui, resolve, reject);
         });
-    }
     else
-        init(parse(ui));
+        init(ui);
 }
 exports.app = app;
