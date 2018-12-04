@@ -21,13 +21,13 @@ export interface IModule {
 
 export interface IAppSettings extends IModule {
     app: object|Array<object>
-  , designer?:Function
   , defaultState?: Object 
   , target?: string|HTMLElement
   , title?: string
   , ui: {Component: any, processElement(tag:any, attributes?:object|undefined, children?:any|undefined) : any, render:any}
   , async?:boolean
   , stateChanged?:Function
+  , disableIntercept?:boolean
 }
 
 export interface IContext {

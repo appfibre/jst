@@ -81,6 +81,7 @@ export function xhr (url:string, parse:boolean) : Promise<any> {
                     }
                     catch (e)
                     {
+                        console.log(rq.responseText);
                         reject(new Error(`Unable to parse response from: ${url}, error: ${e.message}`));
                     }
                 }

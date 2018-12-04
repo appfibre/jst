@@ -112,11 +112,11 @@ export function app (app:IAppSettings) : any {
                 obj = obj.default;
             } else if (jst)
                 prop = path[path.length-1];
-            
-            if (typeof obj == "function" /*&& !(obj.prototype.render)*/ && getFunctionName(obj) === "inject")  // function Component injection 
-                obj = obj(Inject(app, _context, Resolve, jst ? class Component extends app.ui.Component { render(obj:any):any { return parse(app.designer ? [Intercept, {"file": jst, "method": prop}, _construct(app.ui.Component)] : obj); }} : _construct(app.ui.Component), jstContext));
 
-            return _cache[fullpath] = Array.isArray(obj) ? class Wrapper extends app.ui.Component { shouldComponentUpdate() { return true; } render() {if (!obj[1]) obj[1] = {}; if   (!obj[1].key) obj[1].key = 0; return parse(jst && app.designer ? [Intercept, {"file": jst, "method": prop}, obj] : obj); }} : obj;
+            if (typeof obj == "function" && getFunctionName(obj) === "inject")
+                obj = obj(Inject(app, _context, Resolve, jst ? class Component extends app.ui.Component { render(obj:any):any { return parse(!app.disableIntercept && window.parent !== null && window !== window.parent ? [Intercept, {"file": jst, "method": prop}, _construct(app.ui.Component)] : obj); }} : _construct(app.ui.Component), jstContext));
+
+            return _cache[fullpath] = Array.isArray(obj) ? class Wrapper extends app.ui.Component { shouldComponentUpdate() { return true; } render() {if (!obj[1]) obj[1] = {}; if   (!obj[1].key) obj[1].key = 0; return parse(jst && !app.disableIntercept && window.parent !== null && window !== window.parent ? [Intercept, {"file": jst, "method": prop}, obj] : obj); }} : obj;
         }
     } 
 
@@ -148,6 +148,9 @@ export function app (app:IAppSettings) : any {
     }
 
     function parse(obj:any, key?:number|undefined, supportAsync?:boolean):any {  
+        if (obj && obj.__esModule && obj.default) 
+            obj = obj.__jst ? [Intercept, { file: obj.__jst }, [obj.default]] : obj.default;
+
         if (Array.isArray(obj)) {
             if (key && !obj[1]) obj[1] = {key:key};
             if (key && !obj[1].key) obj[1].key = key;
@@ -164,8 +167,8 @@ export function app (app:IAppSettings) : any {
 
             if (Array.isArray(obj[idx])) {
                 for (var i = 0; i < obj[idx].length; i++) {
-                    if (Array.isArray(obj[idx][i]) || typeof obj[idx][i] === "function" || typeof  obj[idx][i] === "object" ) {
-                        if (typeof obj[idx][i] === "function" || Array.isArray(obj[idx][i])) obj[idx][i] = (idx==2) ? parse(obj[idx][i], undefined, supportAsync) : processElement(obj[idx][i], supportAsync, true);
+                    if (Array.isArray(obj[idx][i]) || typeof obj[idx][i] === "function" || typeof obj[idx][i] === "object" ) {
+                        if (typeof obj[idx][i] === "function" || Array.isArray(obj[idx][i]) || obj[idx][i].__esModule ) obj[idx][i] = (idx==2) ? parse(obj[idx][i], undefined, supportAsync) : processElement(obj[idx][i], supportAsync, true);
                         if (obj[idx][i] && obj[idx][i].then) isAsync = true;
                     } else if (idx == 2)
                         throw new Error(`Expected either double array or string for children Parent:${String(obj[0])}, Child:${JSON.stringify(obj[idx][i], (key,value) => typeof value === "function" ? String(value) : value)}`);
@@ -192,9 +195,9 @@ export function app (app:IAppSettings) : any {
     }
 
     var ui = app.app;
-    if (app.designer) {
-            ui = [(window.parent === null || window === window.parent) ? app.designer : Intercept, { file: app.app ? 'todo'/*app.app.__jst*/ : null }, [ui]];
-    }
+    /*if (app.designer) {
+            ui = [(window.parent === null || window === window.parent) ? app.designer : Intercept, { file: app.app ? 'todo'/app.app.__jst/ : null }, [ui]];
+    }*/
 
     //if (typeof ui === "function" && !ui.prototype.render) {ui = ui(Inject(app, _context, Resolve, _construct(app.ui.Component), jstContext));}
 

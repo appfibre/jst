@@ -14,7 +14,7 @@
   "author": "Dawid Rautenbach",
   "license": "ISC",
   "devDependencies": {
-    "@appfibre/jst-syntax": "^0.1.2",
+    "@appfibre/jst-syntax": "^0.1.3",
     "@types/node": "^7.10.2",
     "clean-webpack-plugin": "^1.0.0",
     "copy-webpack-plugin": "^4.6.0",
@@ -30,6 +30,6 @@
     "webpack-dev-server": "3.1.4"
   },
   "dependencies": {
-    "@appfibre/jst": "^0.1.3"
+    "@appfibre/jst": "^0.1.4"
   }
 }

@@ -24,6 +24,7 @@
   ],
   "license": "MIT",
   "main": "index.js",
+  "types": "index.d.ts",
   "name": "@appfibre/jst-react",
   "repository": {
     "type": "git",

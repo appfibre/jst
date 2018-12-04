@@ -17,6 +17,7 @@ module.exports = {
     entry: {
         'main': './index.jst',
         'blank': './blank.jst',
+        'proxy': './proxy.ts'
     },
     
     output: {
@@ -39,6 +40,7 @@ module.exports = {
         new CopyWebpackPlugin([{ from: '../cdn', to: 'cdn' }]),        
 //        new ExtractTextPlugin("styles.css"),
         new HtmlWebpackPlugin({chunks: ['main'], filename: 'index.html', template: './index.html', inject: "head"}),
+        new HtmlWebpackPlugin({chunks: ['proxy'], filename: 'proxy.html', inject: "head"}),
         new webpack.HotModuleReplacementPlugin()
     ],
 
